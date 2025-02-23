@@ -15,6 +15,33 @@ class CanteenApp extends StatelessWidget {
 }
 
 class HomePage extends StatelessWidget {
+  final List<Food> foods = [
+    Food(
+      name: 'Burgers',
+      imagePath: 'assets/burgers.jpg',
+      description: 'Delicious and juicy burgers!',
+      price: 100,
+    ),
+    Food(
+      name: 'Pizza',
+      imagePath: 'assets/pizza.jpg',
+      description: 'Cheesy and tasty pizza.',
+      price: 120,
+    ),
+    Food(
+      name: 'Coca-Cola',
+      imagePath: 'assets/coke.jpg',
+      description: 'Refreshing soft drink.',
+      price: 20,
+    ),
+    Food(
+      name: 'Cake',
+      imagePath: 'assets/cake.jpg',
+      description: 'Fresh and sweet cake.',
+      price: 300,
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +57,6 @@ class HomePage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome Banner
           Container(
             padding: EdgeInsets.all(16.0),
             width: double.infinity,
@@ -44,8 +70,6 @@ class HomePage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 10),
-
-          // Search Bar
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
@@ -57,8 +81,6 @@ class HomePage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 15),
-
-          // Categories
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
@@ -67,20 +89,13 @@ class HomePage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 10),
-
-          // Food Categories Grid
           Expanded(
             child: GridView.count(
               crossAxisCount: 2,
               padding: EdgeInsets.all(16),
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              children: [
-                foodCategoryTile('Burgers', 'assets/burgers.jpg'),
-                foodCategoryTile('Pizza', 'assets/pizza.jpg'),
-                foodCategoryTile('Coca-Cola', 'assets/coke.jpg'),
-                foodCategoryTile('Cake', 'assets/cake.jpg'),
-              ],
+              children: foods.map((food) => foodCategoryTile(context, food)).toList(),
             ),
           ),
         ],
@@ -88,11 +103,18 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget foodCategoryTile(String title, String imagePath) {
+  Widget foodCategoryTile(BuildContext context, Food food) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FoodDetailPage(food: food),
+            ),
+          );
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -100,7 +122,7 @@ class HomePage extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 child: Image.asset(
-                  imagePath,
+                  food.imagePath,
                   fit: BoxFit.cover,
                   width: double.infinity,
                 ),
@@ -109,10 +131,62 @@ class HomePage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                title,
+                food.name,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Food {
+  final String name;
+  final String imagePath;
+  final String description;
+  final double price;
+
+  Food({
+    required this.name,
+    required this.imagePath,
+    required this.description,
+    required this.price,
+  });
+}
+
+class FoodDetailPage extends StatelessWidget {
+  final Food food;
+
+  // Constructor to accept a Food object
+  FoodDetailPage({required this.food});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(food.name)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.asset(food.imagePath, width: double.infinity, height: 200, fit: BoxFit.cover),
+            SizedBox(height: 20),
+            Text(food.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text(food.description, style: TextStyle(fontSize: 16)),
+            SizedBox(height: 10),
+            Text('\Rs ${food.price}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Spacer(),
+            ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Order placed for ${food.name}')),
+                );
+              },
+              child: Text('Place Order'),
             ),
           ],
         ),
