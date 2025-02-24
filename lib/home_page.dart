@@ -1,33 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatelessWidget {
-  final List<Food> foods = [
-    Food(
-      name: 'Burgers',
-      imagePath: 'assets/burgers.jpg',
-      description: 'Delicious and juicy burgers!',
-      price: 100,
-    ),
-    Food(
-      name: 'Pizza',
-      imagePath: 'assets/pizza.jpg',
-      description: 'Cheesy and tasty pizza.',
-      price: 120,
-    ),
-    Food(
-      name: 'Coca-Cola',
-      imagePath: 'assets/coke.jpg',
-      description: 'Refreshing soft drink.',
-      price: 20,
-    ),
-    Food(
-      name: 'Cake',
-      imagePath: 'assets/cake.jpg',
-      description: 'Fresh and sweet cake.',
-      price: 300,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,12 +50,34 @@ class HomePage extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              padding: EdgeInsets.all(16),
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              children: foods.map((food) => foodCategoryTile(context, food)).toList(),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('Foods').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text("No food items available."));
+                }
+
+                var foodList = snapshot.data!.docs.map((doc) {
+                  var data = doc.data() as Map<String, dynamic>;
+                  return Food(
+                    name: data['name'] ?? 'No name',
+                    path: data['path'] ?? '',  // ✅ Updated key
+                    description: data['description'] ?? 'No description',
+                    price: double.tryParse(data['price'].toString()) ?? 0.0,
+                  );
+                }).toList();
+
+                return GridView.count(
+                  crossAxisCount: 2,
+                  padding: EdgeInsets.all(16),
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  children: foodList.map((food) => foodCategoryTile(context, food)).toList(),
+                );
+              },
             ),
           ),
         ],
@@ -107,10 +103,12 @@ class HomePage extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                child: Image.asset(
-                  food.imagePath,
+                child: Image.network(
+                  food.path,  // ✅ Updated key
                   fit: BoxFit.cover,
                   width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.broken_image, size: 50, color: Colors.red),
                 ),
               ),
             ),
@@ -131,13 +129,13 @@ class HomePage extends StatelessWidget {
 
 class Food {
   final String name;
-  final String imagePath;
+  final String path;  // ✅ Updated key
   final String description;
   final double price;
 
   Food({
     required this.name,
-    required this.imagePath,
+    required this.path,  // ✅ Updated key
     required this.description,
     required this.price,
   });
@@ -157,7 +155,13 @@ class FoodDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(food.imagePath, width: double.infinity, height: 200, fit: BoxFit.cover),
+            Image.network(food.path,  // ✅ Updated key
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  Icon(Icons.broken_image, size: 50, color: Colors.red),
+            ),
             SizedBox(height: 20),
             Text(food.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
