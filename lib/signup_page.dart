@@ -14,16 +14,22 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _signup() async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+
+      User? user = userCredential.user;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification(); // 🔹 Send verification email
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Verification email sent. Please check your inbox.")),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Signup Failed: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Signup Failed: $e")),
+      );
     }
   }
 
