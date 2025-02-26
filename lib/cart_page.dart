@@ -1,7 +1,8 @@
-import 'food.dart'; // ✅ Import Food model
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'cart_provider.dart';
+import 'food.dart';
+import 'bill_page.dart'; // ✅ Import Bill Page
 
 class CartPage extends StatelessWidget {
   @override
@@ -10,19 +11,19 @@ class CartPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text('Cart')),
-      body: cartProvider.cartItems.isEmpty // ✅ Fixed getter error
+      body: cartProvider.cartItems.isEmpty
           ? Center(child: Text('Your cart is empty'))
           : Column(
               children: [
                 Expanded(
                   child: ListView.builder(
-                    itemCount: cartProvider.cartItems.length, // ✅ Fixed error
+                    itemCount: cartProvider.cartItems.length,
                     itemBuilder: (context, index) {
-                      final food = cartProvider.cartItems[index]; // ✅ Fixed error
+                      final food = cartProvider.cartItems[index];
                       return ListTile(
                         leading: Image.network(food.path, width: 50, height: 50, fit: BoxFit.cover),
                         title: Text(food.name),
-                        subtitle: Text('Rs ${food.price}'),
+                        subtitle: Text('Rs ${food.price.toStringAsFixed(2)}'),
                         trailing: IconButton(
                           icon: Icon(Icons.remove_circle),
                           onPressed: () {
@@ -37,11 +38,22 @@ class CartPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
                     onPressed: () {
-                      if (cartProvider.cartItems.isNotEmpty) { // ✅ Fixed error
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Order placed successfully!')),
-                        );
-                        cartProvider.clearCart(); // ✅ Fixed error
+                      if (cartProvider.cartItems.isNotEmpty) {
+                        double total = cartProvider.cartItems.fold(0, (sum, item) => sum + item.price);
+                        
+                        // ✅ Move cart items to a separate variable
+                        List<Food> orderedItems = List.from(cartProvider.cartItems);
+                        
+                        // ✅ Navigate first, then clear the cart
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BillPage(
+                              cartItems: orderedItems, // ✅ Pass the copied list
+                              totalPrice: total, // ✅ Pass the total price
+                            ),
+                          ),
+                        ).then((_) => cartProvider.clearCart()); // ✅ Clears cart after returning from BillPage
                       }
                     },
                     child: Text('Place Order'),
