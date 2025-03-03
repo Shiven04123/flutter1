@@ -39,10 +39,7 @@ class BillPage extends StatelessWidget {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('🎉 Order Successfully Placed!'), duration: Duration(seconds: 2)),
-                      );
+                      Navigator.pop(context); // ✅ Close BillPage and return to CartPage
                     },
                     child: Text('Done'),
                   ),

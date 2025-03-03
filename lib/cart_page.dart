@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'cart_provider.dart';
 import 'food.dart';
-import 'bill_page.dart'; // ✅ Import Bill Page
+import 'cart_provider.dart';
+import 'bill_page.dart';
 
 class CartPage extends StatelessWidget {
   @override
@@ -23,7 +23,7 @@ class CartPage extends StatelessWidget {
                       return ListTile(
                         leading: Image.network(food.path, width: 50, height: 50, fit: BoxFit.cover),
                         title: Text(food.name),
-                        subtitle: Text('Rs ${food.price.toStringAsFixed(2)}'),
+                        subtitle: Text('Rs ${food.price}'),
                         trailing: IconButton(
                           icon: Icon(Icons.remove_circle),
                           onPressed: () {
@@ -39,21 +39,33 @@ class CartPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       if (cartProvider.cartItems.isNotEmpty) {
-                        double total = cartProvider.cartItems.fold(0, (sum, item) => sum + item.price);
-                        
-                        // ✅ Move cart items to a separate variable
-                        List<Food> orderedItems = List.from(cartProvider.cartItems);
-                        
-                        // ✅ Navigate first, then clear the cart
+                        // ✅ Show "Order Placed" message BEFORE navigating
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('🎉 Order successfully placed!')),
+                        );
+
+                        // ✅ Navigate to BillPage FIRST
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => BillPage(
-                              cartItems: orderedItems, // ✅ Pass the copied list
-                              totalPrice: total, // ✅ Pass the total price
+                              cartItems: List.from(cartProvider.cartItems),
+                              totalPrice: cartProvider.totalPrice,
                             ),
                           ),
-                        ).then((_) => cartProvider.clearCart()); // ✅ Clears cart after returning from BillPage
+                        ).then((_) {
+                          // ✅ Clear cart AFTER returning from BillPage
+                          cartProvider.clearCart();
+
+                          // ✅ Show "Collect Order" message 15 sec after returning
+                          Future.delayed(Duration(seconds: 9), () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('📦 Your order is ready! Please collect it from the canteen on the ground floor.'),
+                              ),
+                            );
+                          });
+                        });
                       }
                     },
                     child: Text('Place Order'),
