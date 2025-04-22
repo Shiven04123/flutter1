@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'food_detail_page.dart';
-import 'food.dart'; 
+import 'food.dart';
+import 'cart_provider.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -10,10 +12,47 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('College Canteen', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(
-            icon: Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.pushNamed(context, '/cart');
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, child) {
+              int totalItems = cartProvider.cartItems.fold(
+                0,
+                (sum, item) => sum + cartProvider.getQuantity(item),
+              );
+
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/cart');
+                    },
+                  ),
+                  if (totalItems > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Center(
+                          child: Text(
+                            '$totalItems',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
             },
           ),
         ],
@@ -96,7 +135,11 @@ class HomePage extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(food.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text(
+                food.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -104,4 +147,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
