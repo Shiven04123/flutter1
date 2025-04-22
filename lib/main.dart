@@ -31,7 +31,9 @@ class CanteenApp extends StatelessWidget {
       routes: {
         '/home': (context) => HomePage(),
         '/cart': (context) => CartPage(),
-         '/bill': (context) => BillPage(cartItems: [], totalPrice: 0.0),
+        //  '/bill': (context) => BillPage(cartItems: [], totalPrice: 0.0),
+         '/bill': (context) => BillPage(itemsWithQuantity: {}, totalPrice: 0.0),
+
       },
     );
   }

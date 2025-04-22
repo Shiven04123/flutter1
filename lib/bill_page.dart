@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'food.dart';
 
 class BillPage extends StatelessWidget {
-  final List<Food> cartItems;
+  final Map<Food, int> itemsWithQuantity;
   final double totalPrice;
 
-  BillPage({required this.cartItems, required this.totalPrice});
+  BillPage({
+    required this.itemsWithQuantity,
+    required this.totalPrice,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +26,19 @@ class BillPage extends StatelessWidget {
               children: [
                 Center(child: Text('🧾 Your Bill', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
                 Divider(),
-                ...cartItems.map((food) => ListTile(
-                      title: Text(food.name, style: TextStyle(fontSize: 16)),
-                      trailing: Text('Rs ${food.price.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold)),
-                    )),
+                ...itemsWithQuantity.entries.map((entry) {
+                  final food = entry.key;
+                  final quantity = entry.value;
+                  final subtotal = food.price * quantity;
+
+                  return ListTile(
+                    title: Text('${food.name} x$quantity', style: TextStyle(fontSize: 16)),
+                    trailing: Text(
+                      'Rs ${subtotal.toStringAsFixed(2)}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  );
+                }).toList(),
                 Divider(),
                 Align(
                   alignment: Alignment.centerRight,
@@ -39,7 +51,7 @@ class BillPage extends StatelessWidget {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context); // ✅ Close BillPage and return to CartPage
+                      Navigator.pop(context);
                     },
                     child: Text('Done'),
                   ),

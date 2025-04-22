@@ -27,9 +27,32 @@ class CartPage extends StatelessWidget {
                       return ListTile(
                         leading: Image.network(food.path, width: 50, height: 50, fit: BoxFit.cover),
                         title: Text(food.name),
-                        subtitle: Text('Rs ${food.price}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Rs ${food.price}'),
+                            SizedBox(height: 4),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.remove),
+                                  onPressed: () {
+                                    cartProvider.decreaseQuantity(food);
+                                  },
+                                ),
+                                Text('${cartProvider.getQuantity(food)}'),
+                                IconButton(
+                                  icon: Icon(Icons.add),
+                                  onPressed: () {
+                                    cartProvider.addToCart(food);
+                                  },
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
                         trailing: IconButton(
-                          icon: Icon(Icons.remove_circle),
+                          icon: Icon(Icons.delete),
                           onPressed: () {
                             cartProvider.removeFromCart(food);
                           },
@@ -43,7 +66,6 @@ class CartPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       if (cartProvider.cartItems.isNotEmpty) {
-                        // ✅ Get current user
                         User? user = auth.currentUser;
                         if (user == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -52,7 +74,6 @@ class CartPage extends StatelessWidget {
                           return;
                         }
 
-                        // ✅ Prepare order data (includes email now!)
                         List<Map<String, dynamic>> orderItems = cartProvider.cartItems.map((food) {
                           return {
                             "name": food.name,
@@ -63,39 +84,35 @@ class CartPage extends StatelessWidget {
 
                         Map<String, dynamic> orderData = {
                           "userId": user.uid,
-                          "email": user.email, // ✅ Email added
+                          "email": user.email,
                           "items": orderItems,
                           "totalPrice": cartProvider.totalPrice,
                           "timestamp": FieldValue.serverTimestamp(),
                         };
 
-                        // ✅ Store order in Firestore
                         try {
                           await firestore.collection("Orders").add(orderData);
 
-                          // ✅ Show "Order Placed" message BEFORE navigating
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('🎉 Order successfully placed!')),
                           );
 
-                          // ✅ Navigate to BillPage FIRST
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => BillPage(
-                                cartItems: List.from(cartProvider.cartItems),
+                                itemsWithQuantity: Map.from(cartProvider.itemsWithQuantity),
                                 totalPrice: cartProvider.totalPrice,
                               ),
                             ),
                           ).then((_) {
-                            // ✅ Clear cart AFTER returning from BillPage
                             cartProvider.clearCart();
 
-                            // ✅ Show "Collect Order" message 9 sec after returning
                             Future.delayed(Duration(seconds: 9), () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('📦 Your order is ready! Please collect it from the canteen on the ground floor.'),
+                                  content: Text(
+                                      '📦 Your order is ready! Please collect it from the canteen on the ground floor.'),
                                 ),
                               );
                             });

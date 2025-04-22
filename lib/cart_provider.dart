@@ -5,23 +5,53 @@ import 'package:flutter/material.dart';
 
 class CartProvider extends ChangeNotifier {
   final List<Food> _cartItems = [];
+  final Map<Food, int> _itemQuantities = {};
 
   List<Food> get cartItems => _cartItems;
-  double get totalPrice => _cartItems.fold(0, (sum, item) => sum + item.price);
+  Map<Food, int> get itemsWithQuantity => _itemQuantities;
+
+
+  int getQuantity(Food food) => _itemQuantities[food] ?? 1;
 
   void addToCart(Food food) {
-    _cartItems.add(food);
+    if (_itemQuantities.containsKey(food)) {
+      _itemQuantities[food] = _itemQuantities[food]! + 1;
+    } else {
+      _itemQuantities[food] = 1;
+      _cartItems.add(food);
+    }
     notifyListeners();
+  }
+
+  void decreaseQuantity(Food food) {
+    if (_itemQuantities.containsKey(food)) {
+      if (_itemQuantities[food]! > 1) {
+        _itemQuantities[food] = _itemQuantities[food]! - 1;
+      } else {
+        removeFromCart(food);
+      }
+      notifyListeners();
+    }
   }
 
   void removeFromCart(Food food) {
     _cartItems.remove(food);
+    _itemQuantities.remove(food);
     notifyListeners();
   }
 
   void clearCart() {
     _cartItems.clear();
+    _itemQuantities.clear();
     notifyListeners();
+  }
+
+  double get totalPrice {
+    double total = 0;
+    for (var item in _cartItems) {
+      total += item.price * getQuantity(item);
+    }
+    return total;
   }
 
   Future<void> placeOrder() async {
@@ -33,9 +63,12 @@ class CartProvider extends ChangeNotifier {
     try {
       await FirebaseFirestore.instance.collection('orders').add({
         'userId': user.uid,
+        'email': user.email,
         'items': _cartItems.map((item) => {
           'name': item.name,
           'price': item.price,
+          'quantity': getQuantity(item),
+          'image': item.path,
         }).toList(),
         'totalPrice': totalPrice,
         'timestamp': FieldValue.serverTimestamp(),
