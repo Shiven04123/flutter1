@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'home_page.dart';
 import 'cart_page.dart';
 import 'cart_provider.dart';
-import 'login_page.dart'; // ✅ Importing login page
-import 'bill_page.dart'; // ✅ Import Bill Page
+import 'login_page.dart'; 
+import 'bill_page.dart'; 
 
 
 void main() async {
@@ -27,7 +27,7 @@ class CanteenApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(), // ✅ Set login page as first screen
+      home: LoginPage(), // Set login page as first screen
       routes: {
         '/home': (context) => HomePage(),
         '/cart': (context) => CartPage(),

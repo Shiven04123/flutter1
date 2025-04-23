@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('College Canteen', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          Consumer<CartProvider>(
+          Consumer<CartProvider>(   //for changes in the cart (items added or removed).
             builder: (context, cartProvider, child) {
               int totalItems = cartProvider.cartItems.fold(
                 0,
@@ -27,7 +27,7 @@ class HomePage extends StatelessWidget {
                       Navigator.pushNamed(context, '/cart');
                     },
                   ),
-                  if (totalItems > 0)
+                  if (totalItems > 0)    //for red count badge on cart icon
                     Positioned(
                       right: 6,
                       top: 6,
@@ -40,7 +40,7 @@ class HomePage extends StatelessWidget {
                         constraints: BoxConstraints(minWidth: 16, minHeight: 16),
                         child: Center(
                           child: Text(
-                            '$totalItems',
+                            '$totalItems',    //count of items in badge
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -72,9 +72,9 @@ class HomePage extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 10),   //For empty space
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
+            child: StreamBuilder<QuerySnapshot>(    //Listens to live updates from Firebase
               stream: FirebaseFirestore.instance.collection('Foods').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'cart_provider.dart';
 import 'home_page.dart';
-import 'food.dart'; // ✅ Import the correct Food model
+import 'food.dart'; 
 
 class FoodDetailPage extends StatelessWidget {
   final Food food;
@@ -33,7 +33,10 @@ class FoodDetailPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 cartProvider.addToCart(food);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${food.name} added to cart')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${food.name} added to cart'),
+                    duration: Duration(seconds: 1))); 
               },
               child: Text('Add to Cart'),
             ),
